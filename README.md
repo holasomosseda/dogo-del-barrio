@@ -1,2 +1,81 @@
-# dogo-del-barrio
-Web con bot de pedidos para El Dogo del Barrio
+# El Dogo del Barrio — web con bot de pedidos
+
+Sitio de una página: el perrito atiende, arma el pedido y lo manda al
+WhatsApp de la sucursal. Menú completo abajo. Español e inglés.
+
+HTML, CSS y JavaScript planos. **Sin build step**: Cloudflare Pages
+publica los archivos tal cual.
+
+---
+
+## Cómo cambiar las cosas que se cambian seguido
+
+Casi todo vive en **`js/menu.js`**. Es la fuente única: el menú que se ve
+en la página y el bot leen del mismo archivo, así que un precio no se
+puede desincronizar entre los dos.
+
+### Cambiar un precio
+
+Busca el platillo y edita el número de `precio`. Sin `$`, sin comas.
+
+```js
+{ id: 'pastor', nombre: 'Pastor Alemán', precio: 125, ... }
+```
+
+### Agregar un perro nuevo
+
+Copia un bloque completo, pégalo al final de la lista `DOGO.perros` y
+cámbiale `id` (único, sin espacios), `nombre`, `precio` y las dos
+descripciones.
+
+### Cambiar un número de WhatsApp
+
+En `DOGO.sucursales`. El formato es internacional, **sin `+`, sin
+espacios y sin guiones**. México es `52` + 10 dígitos.
+
+```js
+{ id: 'suc1', nombre: 'Sucursal 1', tel: '525545883123' }
+```
+
+### Agregar una sucursal
+
+Agrega otro bloque a `DOGO.sucursales`. El bot genera los botones solo;
+no hay que tocar nada más.
+
+---
+
+## Los archivos
+
+```
+index.html          estructura de la página
+css/estilos.css     todo el diseño
+js/menu.js          DATOS: platillos, precios, sucursales, textos ES/EN
+js/bot.js           el flujo del pedido y el mensaje de WhatsApp
+js/pagina.js        dibuja el menú de abajo y el cambio de idioma
+js/perrito.js       la animación del perrito
+img/perrito.svg     el personaje, vectorial
+img/logo.png        el logo, con fondo transparente
+fonts/              Anton y Barlow, alojadas aquí mismo
+```
+
+---
+
+## Decisiones que conviene no deshacer sin pensarlo
+
+**El pedido a WhatsApp siempre va en español**, aunque el cliente esté
+navegando en inglés. Quien lee ese mensaje es el que está parado en el
+truck.
+
+**Los nombres de los platillos no se traducen.** Son razas de perro y son
+la marca; `Pastor Alemán` es un juego de palabras que en inglés se pierde.
+Solo las descripciones tienen versión en inglés.
+
+**Las fuentes están alojadas aquí**, no se piden a Google. Carga más
+rápido en datos móviles y el sitio no depende de un tercero.
+
+**El perrito no es un intro.** Es el que atiende: está presente y vivo
+todo el rato que dura el pedido. Por eso se anima con CSS y no con video.
+
+**`wa.me` no envía el mensaje**, solo abre WhatsApp con el pedido ya
+escrito. El cliente le da enviar. Eso es a propósito: el pedido llega
+como un mensaje normal de WhatsApp, no se queda atorado en la web.

@@ -1,0 +1,686 @@
+/* =========================================================
+   EL DOGO DEL BARRIO
+   ---------------------------------------------------------
+   Paleta y tipografía sacadas del material impreso:
+   rojo de marca, negro de la línea, fondo tipo concreto y
+   el amarillo mostaza del contorno del logo.
+
+   Anton (condensada pesada) es la misma familia visual que
+   el "NUESTROS PERROS" del menú impreso. Barlow carga la
+   lectura. Nada redondeado: esto es impresión callejera,
+   no una app.
+   ========================================================= */
+
+:root {
+  --rojo:        #E3261F;
+  --rojo-hondo:  #A8120D;
+  --tinta:       #141414;
+  --concreto:    #EDEAE4;
+  --hueso:       #F7F5F0;
+  --mostaza:     #F2B705;
+  --humo:        #6F6B66;
+  --whats:       #1EBE57;
+
+  --sombra:      4px 4px 0 var(--tinta);
+  --sombra-baja: 2px 2px 0 var(--tinta);
+
+  --ancho: 1240px;
+}
+
+/* ---- fuentes propias, servidas desde /fonts ---- */
+
+@font-face {
+  font-family: 'Anton';
+  src: url('../fonts/anton-400.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('../fonts/barlow-400.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('../fonts/barlow-600.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('../fonts/barlow-700.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background-color: var(--concreto);
+  /* grano de concreto, generado — no es una imagen que descargar */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)' opacity='.055'/%3E%3C/svg%3E");
+  color: var(--tinta);
+  font-family: 'Barlow', system-ui, -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+:focus-visible {
+  outline: 3px solid var(--rojo);
+  outline-offset: 3px;
+}
+
+/* ===================== BARRA ===================== */
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  max-width: var(--ancho);
+  margin: 0 auto;
+}
+
+.barra__logo {
+  width: auto;
+  height: 62px;
+}
+
+.barra__idioma {
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  padding: 7px 15px;
+  color: var(--tinta);
+  background: transparent;
+  border: 2px solid var(--tinta);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color .12s, color .12s;
+}
+
+.barra__idioma:hover { background: var(--tinta); color: var(--hueso); }
+
+/* ===================== ZONA DE PEDIDO ===================== */
+
+.zona {
+  position: relative;
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 0 16px 72px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* ===================== SALUDO ===================== */
+
+.intro { position: relative; z-index: 2; }
+
+.intro__saludo {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 11vw, 4.2rem);
+  line-height: .92;
+  letter-spacing: -0.012em;
+  text-transform: uppercase;
+  margin: 4px 0 10px;
+}
+
+.intro__bajada {
+  margin: 0 0 6px;
+  max-width: 44ch;
+  color: var(--humo);
+  font-size: 1.02rem;
+}
+
+/* ===================== EL PERRITO ===================== */
+
+.perrito {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  margin-inline: auto;
+  padding: 6px 0;
+  transform: translate3d(var(--desvio-x, 0), var(--desvio-y, 0), 0);
+}
+
+/* franja roja rasgada detrás, como los trazos del menú impreso */
+.perrito::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -16%;
+  right: -16%;
+  top: 10%;
+  bottom: 6%;
+  background: var(--rojo);
+  clip-path: polygon(3% 4%, 97% 0%, 100% 95%, 0% 100%);
+}
+
+.perrito__reaccion { transform-origin: 50% 100%; }
+
+.perrito__img {
+  width: auto;
+  max-width: 100%;
+  height: min(37vh, 400px);
+  margin-inline: auto;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(6px 8px 0 rgba(20, 20, 20, .22));
+  opacity: 0;
+  transform: translateY(42px);
+}
+
+.perrito--entro .perrito__img {
+  animation:
+    llegada .85s cubic-bezier(.17, .84, .36, 1.07) forwards,
+    respira 4.2s ease-in-out 1s infinite;
+}
+
+@keyframes llegada {
+  0%   { opacity: 0; transform: translateY(42px) scaleY(.97); }
+  60%  { opacity: 1; transform: translateY(-7px) scaleY(1.015); }
+  100% { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+
+@keyframes respira {
+  0%, 100% { transform: translateY(0)     scaleY(1); }
+  50%      { transform: translateY(-3px)  scaleY(1.014); }
+}
+
+@keyframes brinco {
+  0%   { transform: translateY(0) rotate(0deg)      scale(1); }
+  28%  { transform: translateY(-16px) rotate(-2.5deg) scale(1.035); }
+  62%  { transform: translateY(2px)  rotate(1.2deg)  scale(.988); }
+  100% { transform: translateY(0) rotate(0deg)      scale(1); }
+}
+
+.perrito--brinca { animation: brinco .52s cubic-bezier(.3, .9, .4, 1); }
+
+/* ===================== VENTANILLA ===================== */
+
+.ventanilla {
+  position: relative;
+  z-index: 1;
+  background: var(--hueso);
+  border: 3px solid var(--tinta);
+  border-radius: 3px;
+  box-shadow: var(--sombra);
+  padding: 26px 22px 22px;
+}
+
+.ventanilla__pregunta {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.35rem, 4.4vw, 1.75rem);
+  line-height: 1.1;
+  letter-spacing: .005em;
+  margin: 0 0 4px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--rojo);
+  text-transform: uppercase;
+}
+
+.ventanilla__nota {
+  margin: 12px 0 0;
+  color: var(--humo);
+  font-size: .94rem;
+  max-width: 48ch;
+}
+
+.ventanilla__opciones {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.ventanilla__opciones--rejilla { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.ventanilla__opciones--duo     { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+.ventanilla__abajo {
+  display: inline-block;
+  margin-top: 26px;
+  color: var(--tinta);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--rojo);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
+
+/* ===================== OPCIONES ===================== */
+
+.opcion {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: 1.08rem;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+  text-align: left;
+  text-decoration: none;
+  color: var(--tinta);
+  background: var(--concreto);
+  border: 2.5px solid var(--tinta);
+  border-radius: 2px;
+  box-shadow: var(--sombra-baja);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .1s, background-color .12s;
+}
+
+.opcion:hover { background: var(--mostaza); }
+
+.opcion:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--tinta);
+}
+
+.opcion--ancha { grid-column: 1 / -1; }
+
+.opcion--si {
+  background: var(--rojo);
+  color: var(--hueso);
+}
+.opcion--si:hover { background: var(--rojo-hondo); }
+
+.opcion--whats {
+  grid-column: 1 / -1;
+  background: var(--whats);
+  color: #07240F;
+  font-size: 1.25rem;
+  text-align: center;
+  padding: 18px 16px;
+  box-shadow: var(--sombra);
+}
+.opcion--whats:hover { background: #17A94B; }
+
+.opcion--texto {
+  grid-column: 1 / -1;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--humo);
+  font-family: 'Barlow', sans-serif;
+  font-size: .96rem;
+  text-transform: none;
+  text-align: center;
+  padding: 6px;
+  text-decoration: underline;
+}
+.opcion--texto:hover { background: transparent; color: var(--tinta); }
+
+.opcion--producto { display: block; }
+
+.opcion__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.opcion__nombre { line-height: 1.12; }
+
+.opcion__precio {
+  color: var(--rojo);
+  font-size: 1.16rem;
+  flex: none;
+}
+
+.opcion--si .opcion__precio { color: var(--hueso); }
+
+.opcion__desc {
+  display: block;
+  margin-top: 6px;
+  font-family: 'Barlow', sans-serif;
+  font-size: .88rem;
+  font-weight: 400;
+  line-height: 1.38;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--humo);
+}
+
+.opcion:hover .opcion__desc { color: var(--tinta); }
+
+/* ===================== CAMPO DE NOMBRE ===================== */
+
+.campo {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.campo__input {
+  flex: 1 1 200px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 1.1rem;
+  padding: 13px 14px;
+  color: var(--tinta);
+  background: var(--concreto);
+  border: 2.5px solid var(--tinta);
+  border-radius: 2px;
+}
+
+.campo__error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--rojo-hondo);
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+/* ===================== COMANDA ===================== */
+
+.comanda {
+  position: relative;
+  z-index: 1;
+  background: var(--hueso);
+  border: 3px solid var(--tinta);
+  border-radius: 3px;
+  box-shadow: var(--sombra);
+  padding: 20px 18px;
+  align-self: start;
+}
+
+.comanda__titulo {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.comanda__sucursal {
+  margin: 2px 0 14px;
+  font-size: .92rem;
+  color: var(--humo);
+}
+
+.comanda__vacio { margin: 0; color: var(--humo); font-size: .95rem; }
+
+.comanda__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px dashed var(--tinta);
+}
+
+.comanda__linea {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 2px dashed rgba(20, 20, 20, .28);
+}
+
+.comanda__texto { font-weight: 600; line-height: 1.25; }
+
+.comanda__combo {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 7px;
+  background: var(--mostaza);
+  border: 1.5px solid var(--tinta);
+  border-radius: 2px;
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: .72rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+.comanda__precio { font-family: 'Anton', Impact, sans-serif; font-size: 1.05rem; }
+
+.comanda__quitar {
+  font-size: 1.25rem;
+  line-height: 1;
+  width: 30px;
+  height: 30px;
+  color: var(--humo);
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.comanda__quitar:hover { color: var(--rojo); border-color: var(--rojo); }
+
+.comanda__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 0;
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.comanda__total strong { font-weight: 400; font-size: 1.75rem; color: var(--rojo); }
+
+/* ===================== MENÚ ===================== */
+
+.menu {
+  position: relative;
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 56px 16px 80px;
+}
+
+.menu::before {
+  content: '';
+  display: block;
+  height: 10px;
+  margin-bottom: 44px;
+  background: var(--tinta);
+  clip-path: polygon(0 0, 100% 22%, 99% 100%, 1% 74%);
+}
+
+.menu__titulo {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(3.2rem, 14vw, 7rem);
+  line-height: .86;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  margin: 0 0 40px;
+}
+
+.menu__seccion {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  margin: 46px 0 18px;
+  padding-bottom: 8px;
+  border-bottom: 4px solid var(--rojo);
+}
+
+.menu__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px 44px;
+  grid-template-columns: 1fr;
+}
+
+.platillo { padding: 13px 0; border-bottom: 1.5px solid rgba(20, 20, 20, .16); }
+
+.platillo__cabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.platillo__nombre {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: 1.22rem;
+  letter-spacing: .012em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.platillo__precio {
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: 1.3rem;
+  color: var(--rojo);
+  flex: none;
+}
+
+.platillo__desc {
+  margin: 3px 0 0;
+  max-width: 54ch;
+  font-size: .95rem;
+  color: var(--humo);
+}
+
+/* ---- bloque de combo ---- */
+
+.combo {
+  margin: 40px 0 8px;
+  padding: 24px 22px;
+  background: var(--tinta);
+  color: var(--hueso);
+  border-radius: 3px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 20px;
+}
+
+.combo__titulo {
+  font-family: 'Anton', Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 6vw, 2.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.combo__precio {
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: clamp(2rem, 7vw, 3rem);
+  line-height: 1;
+  color: var(--tinta);
+  background: var(--mostaza);
+  border-radius: 2px;
+  padding: 4px 16px;
+}
+
+.combo__desc {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  color: #C9C4BC;
+  max-width: 52ch;
+}
+
+.menu__cta {
+  display: block;
+  margin-top: 52px;
+  padding: 20px 18px;
+  font-family: 'Anton', Impact, sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  color: var(--hueso);
+  background: var(--rojo);
+  border: 3px solid var(--tinta);
+  border-radius: 3px;
+  box-shadow: var(--sombra);
+  transition: transform .1s, box-shadow .1s, background-color .12s;
+}
+
+.menu__cta:hover { background: var(--rojo-hondo); }
+.menu__cta:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--tinta); }
+
+/* ===================== PIE ===================== */
+
+.pie {
+  padding: 30px 16px 42px;
+  text-align: center;
+  color: var(--humo);
+  font-size: .9rem;
+  border-top: 1.5px solid rgba(20, 20, 20, .16);
+}
+
+.pie p { margin: 0 0 6px; }
+.pie__seda a { color: var(--humo); }
+
+/* ===================== PANTALLAS GRANDES ===================== */
+
+@media (min-width: 900px) {
+
+  .zona {
+    grid-template-columns: 37% 1fr;
+    grid-template-areas:
+      'perrito intro'
+      'perrito ventanilla'
+      'perrito comanda';
+    align-items: start;
+    gap: 0 38px;
+    padding-top: 4px;
+  }
+
+  .intro { grid-area: intro; }
+  .intro__saludo { font-size: clamp(2.8rem, 4.6vw, 4.1rem); margin-top: 0; }
+  .intro__bajada { margin-bottom: 22px; }
+
+  .perrito {
+    grid-area: perrito;
+    position: sticky;
+    top: 20px;
+    width: 100%;
+  }
+
+  .perrito__img { height: auto; max-height: calc(100vh - 150px); }
+
+  /* la franja no debe meterse en la columna del texto: ahí el gris
+     sobre rojo se vuelve ilegible */
+  .perrito::before { left: -14%; right: -2%; }
+
+  .ventanilla { grid-area: ventanilla; padding: 30px 32px 28px; }
+
+  .comanda { grid-area: comanda; margin-top: 20px; }
+
+  .barra__logo { height: 84px; }
+
+  .menu__lista { grid-template-columns: 1fr 1fr; }
+  .menu__lista--corta { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 1100px) {
+  body { font-size: 18px; }
+}
+
+/* ===================== MENOS MOVIMIENTO ===================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .perrito__img { opacity: 1; transform: none; }
+
+  .perrito--entro .perrito__img,
+  .perrito--brinca {
+    animation: none;
+  }
+
+  .opcion, .menu__cta { transition: none; }
+
+  html { scroll-behavior: auto; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El Dogo del Barrio — Pide tus hot dogs</title>
+<meta name="description" content="Arma tu pedido de hot dogs y te lo preparamos. Sin filas y sin esperar a que te contesten.">
+<meta name="theme-color" content="#141414">
+
+<meta property="og:title" content="El Dogo del Barrio">
+<meta property="og:description" content="Arma tu pedido de hot dogs y te lo preparamos.">
+<meta property="og:type" content="website">
+
+<!-- Fuentes alojadas aquí mismo: más rápido en datos móviles y sin depender de Google -->
+<link rel="preload" href="fonts/anton-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-400.woff2" as="font" type="font/woff2" crossorigin>
+
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+
+<header class="barra">
+  <img class="barra__logo" src="img/logo.png" width="760" height="564" alt="El Dogo del Barrio">
+  <button type="button" class="barra__idioma" id="idioma" data-txt="idioma">English</button>
+</header>
+
+<main>
+
+  <!-- ===== LA VENTANILLA: aquí se pide ===== -->
+  <section class="zona" id="pedir">
+
+    <div class="intro">
+      <h1 class="intro__saludo" data-txt="saludo">¿Qué va a querer, jefe?</h1>
+      <p class="intro__bajada" data-txt="bajada"></p>
+    </div>
+
+    <div class="perrito" id="perrito-caja">
+      <div class="perrito__reaccion" id="perrito-reaccion">
+        <img class="perrito__img" id="perrito-img" src="img/perrito.svg"
+             alt="El Dogo del Barrio, con gorra, lentes oscuros y chaleco de mezclilla, sosteniendo una cátsup y un hot dog">
+      </div>
+    </div>
+
+    <div class="ventanilla" id="ventanilla">
+      <h2 class="ventanilla__pregunta" id="bot-pregunta"></h2>
+      <div class="ventanilla__opciones" id="bot-opciones"></div>
+
+      <a class="ventanilla__abajo" href="#menu" data-txt="verMenu">Ver el menú</a>
+    </div>
+
+    <aside class="comanda" id="bot-comanda" hidden></aside>
+
+  </section>
+
+  <!-- ===== EL MENÚ ===== -->
+  <section class="menu" id="menu">
+
+    <h2 class="menu__titulo" data-txt="menuTitulo">El menú</h2>
+
+    <h3 class="menu__seccion" data-txt="menuPerros">Nuestros perros</h3>
+    <ul class="menu__lista" id="lista-perros"></ul>
+
+    <div class="combo">
+      <h3 class="combo__titulo" data-txt="menuCombo">Hazlo combo</h3>
+      <span class="combo__precio" id="combo-precio"></span>
+      <p class="combo__desc" id="combo-desc"></p>
+    </div>
+
+    <h3 class="menu__seccion" data-txt="menuPapas">Nuestras papas</h3>
+    <ul class="menu__lista menu__lista--corta" id="lista-papas"></ul>
+
+    <h3 class="menu__seccion" data-txt="menuBebidas">Bebidas</h3>
+    <ul class="menu__lista menu__lista--corta" id="lista-bebidas"></ul>
+
+    <a class="menu__cta" href="#pedir" data-txt="menuPedirCta">Pedir por WhatsApp</a>
+
+  </section>
+
+</main>
+
+<footer class="pie">
+  <p data-txt="pie">Hecho para El Dogo del Barrio</p>
+  <!-- Crédito de SEDA, si lo quieres visible, descomenta esta línea:
+  <p class="pie__seda"><a href="https://somosseda.com" target="_blank" rel="noopener">Sitio por SEDA</a></p>
+  -->
+</footer>
+
+<script src="js/menu.js"></script>
+<script src="js/bot.js"></script>
+<script src="js/pagina.js"></script>
+<script src="js/perrito.js"></script>
+
+</body>
+</html>
