@@ -50,13 +50,27 @@ no hay que tocar nada más.
 index.html          estructura de la página
 css/estilos.css     todo el diseño
 js/menu.js          DATOS: platillos, precios, sucursales, textos ES/EN
-js/bot.js           el flujo del pedido y el mensaje de WhatsApp
+js/bot.js           el asistente: la conversación y el mensaje de WhatsApp
 js/pagina.js        dibuja el menú de abajo y el cambio de idioma
-js/perrito.js       la animación del perrito
-img/perrito.svg     el personaje, vectorial
+js/perrito.js       entrada y reacciones del perrito
+video/dogo-loop.mp4 la animación (Kling), en boomerang para que cicle
+video/poster.jpg    primer cuadro, se ve mientras carga el video
+img/perrito.svg     el personaje en vector (respaldo, ya no se usa en el hero)
 img/logo.png        el logo, con fondo transparente
 fonts/              Anton y Barlow, alojadas aquí mismo
 ```
+
+## Si algún día se cambia el video
+
+El fondo del video **tiene que coincidir con `#EDEAE4`**, el color de la
+página, o se va a ver el rectángulo. Kling regresó el suyo en `#EBE7DF` y
+hubo que corregirlo:
+
+```
+ffmpeg -i entrada.mp4 -vf "lutrgb=r='clip(val+2,0,255)':g='clip(val+3,0,255)':b='clip(val+5,0,255)'" salida.mp4
+```
+
+Mide el fondo real antes de asumir que quedó bien.
 
 ---
 

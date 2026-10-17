@@ -23,13 +23,19 @@
     var reaccion = document.getElementById('perrito-reaccion');
     if (!caja || !reaccion) { return; }
 
-    /* ---- entrada: una sola vez, cuando ya cargó el dibujo ---- */
-    var img = document.getElementById('perrito-img');
-    function entrar() { caja.classList.add('perrito--entro'); }
+    /* ---- entrada: una sola vez, cuando el video ya tiene imagen ---- */
+    var video = document.getElementById('perrito-img');
+    var entro = false;
+    function entrar() {
+      if (entro) { return; }
+      entro = true;
+      caja.classList.add('perrito--entro');
+    }
 
-    if (img && !img.complete) {
-      img.addEventListener('load', entrar);
-      img.addEventListener('error', entrar);   // si falla, igual destapamos el layout
+    if (video && video.readyState < 2) {
+      video.addEventListener('loadeddata', entrar);
+      video.addEventListener('error', entrar);      // si falla, queda el poster
+      window.setTimeout(entrar, 1800);              // y nunca se queda invisible
     } else {
       entrar();
     }

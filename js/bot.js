@@ -1,43 +1,128 @@
 /* =========================================================
-   EL DOGO DEL BARRIO — bot de pedidos
+   EL DOGO DEL BARRIO — el asistente
    ---------------------------------------------------------
-   Arma el pedido con preguntas encadenadas y al final abre
-   WhatsApp con el mensaje ya escrito.
+   Todo pasa dentro de la pantalla: el asistente escribe, tú
+   contestas, y el pedido se va armando en la barra de arriba.
 
-   OJO: el mensaje de WhatsApp siempre va en español, aunque
-   el cliente esté navegando en inglés. Quien lo lee es el
-   que está parado en el truck.
+   El mensaje de WhatsApp SIEMPRE sale en español, aunque la
+   página esté en inglés. Quien lo lee es el que está parado
+   en el truck.
    ========================================================= */
 
 (function () {
   'use strict';
+
+  var menosMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   var estado = {
     idioma: 'es',
     sucursal: null,
     carrito: [],
     nombre: '',
-    paso: 'sucursal',
-    pendiente: null   // el perro que acaba de escoger, esperando respuesta de combo
+    paso: 'saludo',
+    pendiente: null
   };
 
   var el = {};
+  var saltar = null;      // si el asistente está escribiendo, esto lo adelanta
 
   function t() { return DOGO.textos[estado.idioma]; }
   function dinero(n) { return '$' + n; }
 
-  /* ---------------- construcción de elementos ---------------- */
+  function limpiar(nodo) { while (nodo.firstChild) { nodo.removeChild(nodo.firstChild); } }
 
-  function boton(texto, onClick, extra) {
+  function abajo() {
+    el.charla.scrollTop = el.charla.scrollHeight;
+  }
+
+  /* ================= burbujas ================= */
+
+  function burbuja(texto, quien) {
+    var div = document.createElement('div');
+    div.className = 'msg msg--' + quien;
+    div.appendChild(document.createTextNode(texto));
+    return div;
+  }
+
+  function puntos() {
+    var div = document.createElement('div');
+    div.className = 'msg msg--dogo msg--puntos';
+    div.setAttribute('aria-label', t().escribiendo);
+    for (var i = 0; i < 3; i++) {
+      var p = document.createElement('span');
+      p.className = 'punto';
+      div.appendChild(p);
+    }
+    return div;
+  }
+
+  /* Escribe un mensaje: primero los puntitos, luego la burbuja.
+     Tocar la pantalla lo adelanta. */
+  function escribir(texto, listo) {
+    var señal = puntos();
+    el.charla.appendChild(señal);
+    abajo();
+
+    var espera = menosMovimiento.matches
+      ? 0
+      : Math.min(1100, 380 + texto.length * 11);
+
+    var reloj = window.setTimeout(terminar, espera);
+    saltar = terminar;
+
+    function terminar() {
+      if (!saltar && !reloj) { return; }
+      window.clearTimeout(reloj);
+      reloj = null;
+      saltar = null;
+      if (señal.parentNode) { señal.parentNode.removeChild(señal); }
+      el.charla.appendChild(burbuja(texto, 'dogo'));
+      abajo();
+      listo();
+    }
+  }
+
+  function decir(lista, listo) {
+    var i = 0;
+    (function siguiente() {
+      if (i >= lista.length) { if (listo) { listo(); } return; }
+      escribir(lista[i++], siguiente);
+    })();
+  }
+
+  function contesto(texto) {
+    el.charla.appendChild(burbuja(texto, 'yo'));
+    abajo();
+  }
+
+  /* ================= opciones dentro de la charla ================= */
+
+  function bandeja(clase) {
+    var div = document.createElement('div');
+    div.className = 'opciones' + (clase ? ' ' + clase : '');
+    el.charla.appendChild(div);
+    return div;
+  }
+
+  function cerrar(caja) {
+    if (caja && caja.parentNode) { caja.parentNode.removeChild(caja); }
+  }
+
+  function botonSimple(caja, texto, alElegir, extra) {
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'opcion' + (extra ? ' ' + extra : '');
     b.appendChild(document.createTextNode(texto));
-    b.addEventListener('click', onClick);
+    b.addEventListener('click', function () {
+      cerrar(caja);
+      contesto(texto);
+      alElegir();
+    });
+    caja.appendChild(b);
     return b;
   }
 
-  function opcionProducto(item, onClick) {
+  function botonProducto(caja, item, alElegir) {
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'opcion opcion--producto';
@@ -62,353 +147,318 @@
 
     b.appendChild(fila);
     b.appendChild(desc);
-    b.addEventListener('click', onClick);
-    return b;
+
+    b.addEventListener('click', function () {
+      cerrar(caja);
+      contesto(item.nombre);
+      alElegir();
+    });
+    caja.appendChild(b);
   }
 
-  function limpiar(nodo) {
-    while (nodo.firstChild) { nodo.removeChild(nodo.firstChild); }
-  }
-
-  /* ---------------- carrito ---------------- */
+  /* ================= carrito ================= */
 
   function agregar(item, tipo, combo) {
-    /* Fuera del menú, "Explosivas" no se entiende. En la comanda y en
-       el WhatsApp las papas llevan su prefijo. */
+    /* Fuera del menú, "Explosivas" no se entiende. En la comanda y
+       en el WhatsApp las papas llevan su prefijo. */
     var nombre = (tipo === 'papas') ? 'Papas ' + item.nombre : item.nombre;
 
     estado.carrito.push({
-      tipo: tipo,
-      nombre: nombre,
-      precio: item.precio,
-      combo: !!combo
+      tipo: tipo, nombre: nombre, precio: item.precio, combo: !!combo
     });
+    pintarBarra();
     document.dispatchEvent(new CustomEvent('dogo:agregado'));
   }
 
-  function quitar(indice) {
-    estado.carrito.splice(indice, 1);
-    if (estado.carrito.length === 0) {
-      estado.paso = 'perro';
-    }
-    render();
-  }
-
   function total() {
-    return estado.carrito.reduce(function (suma, linea) {
-      return suma + linea.precio + (linea.combo ? DOGO.combo.precio : 0);
+    return estado.carrito.reduce(function (s, l) {
+      return s + l.precio + (l.combo ? DOGO.combo.precio : 0);
     }, 0);
   }
 
-  /* ---------------- pasos ---------------- */
+  function pintarBarra() {
+    limpiar(el.cuenta);
+    var n = estado.carrito.length;
+    if (!n) { el.cuenta.appendChild(document.createTextNode('—')); return; }
+    el.cuenta.appendChild(document.createTextNode(n + ' · ' + dinero(total())));
+  }
+
+  /* ================= pasos ================= */
 
   var pasos = {
 
-    sucursal: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pSucursal));
-      DOGO.sucursales.forEach(function (suc) {
-        opciones.appendChild(boton(suc.nombre, function () {
-          estado.sucursal = suc;
-          estado.paso = 'perro';
-          render();
-        }, 'opcion--ancha'));
+    saludo: function () {
+      decir([t().hola1, t().pSucursal], function () {
+        var caja = bandeja('opciones--ancha');
+        DOGO.sucursales.forEach(function (suc) {
+          botonSimple(caja, suc.nombre, function () {
+            estado.sucursal = suc;
+            ir('perro');
+          });
+        });
       });
     },
 
-    perro: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pPerro));
-      opciones.className = 'ventanilla__opciones ventanilla__opciones--rejilla';
-      DOGO.perros.forEach(function (perro) {
-        opciones.appendChild(opcionProducto(perro, function () {
-          estado.pendiente = perro;
-          estado.paso = 'combo';
-          render();
-        }));
+    perro: function () {
+      decir([t().pPerro], function () {
+        var caja = bandeja('opciones--rejilla');
+        DOGO.perros.forEach(function (p) {
+          botonProducto(caja, p, function () {
+            estado.pendiente = p;
+            ir('combo');
+          });
+        });
       });
     },
 
-    combo: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pCombo));
-
-      var nota = document.createElement('p');
-      nota.className = 'ventanilla__nota';
-      nota.appendChild(document.createTextNode(
-        DOGO.combo.desc[estado.idioma] + '  +' + dinero(DOGO.combo.precio)
-      ));
-      pregunta.parentNode.insertBefore(nota, opciones);
-
-      opciones.appendChild(boton(t().comboSi, function () {
-        agregar(estado.pendiente, 'perro', true);
-        estado.pendiente = null;
-        estado.paso = 'extra';
-        render();
-      }, 'opcion--ancha opcion--si'));
-
-      opciones.appendChild(boton(t().comboNo, function () {
-        agregar(estado.pendiente, 'perro', false);
-        estado.pendiente = null;
-        estado.paso = 'extra';
-        render();
-      }, 'opcion--ancha'));
-    },
-
-    extra: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pExtra));
-      opciones.className = 'ventanilla__opciones ventanilla__opciones--duo';
-
-      opciones.appendChild(boton(t().otroPerro, function () {
-        estado.paso = 'perro'; render();
-      }));
-      opciones.appendChild(boton(t().masPapas, function () {
-        estado.paso = 'papas'; render();
-      }));
-      opciones.appendChild(boton(t().masBebida, function () {
-        estado.paso = 'bebida'; render();
-      }));
-      opciones.appendChild(boton(t().yaTermine, function () {
-        estado.paso = 'nombre'; render();
-      }, 'opcion--si'));
-    },
-
-    papas: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pPapas));
-      opciones.className = 'ventanilla__opciones ventanilla__opciones--rejilla';
-      DOGO.papas.forEach(function (p) {
-        opciones.appendChild(opcionProducto(p, function () {
-          agregar(p, 'papas', false);
-          estado.paso = 'extra';
-          render();
-        }));
+    combo: function () {
+      var pregunta = t().pCombo + ' ' + DOGO.combo.desc[estado.idioma] +
+                     ' +' + dinero(DOGO.combo.precio);
+      decir([pregunta], function () {
+        var caja = bandeja('opciones--ancha');
+        botonSimple(caja, t().comboSi, function () {
+          agregar(estado.pendiente, 'perro', true);
+          estado.pendiente = null;
+          ir('extra');
+        }, 'opcion--si');
+        botonSimple(caja, t().comboNo, function () {
+          agregar(estado.pendiente, 'perro', false);
+          estado.pendiente = null;
+          ir('extra');
+        });
       });
     },
 
-    bebida: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pBebida));
-      opciones.className = 'ventanilla__opciones ventanilla__opciones--rejilla';
-      DOGO.bebidas.forEach(function (b) {
-        opciones.appendChild(opcionProducto(b, function () {
-          agregar(b, 'bebida', false);
-          estado.paso = 'extra';
-          render();
-        }));
+    extra: function () {
+      decir([t().pExtra], function () {
+        var caja = bandeja('opciones--duo');
+        botonSimple(caja, t().otroPerro, function () { ir('perro'); });
+        botonSimple(caja, t().masPapas,  function () { ir('papas'); });
+        botonSimple(caja, t().masBebida, function () { ir('bebida'); });
+        botonSimple(caja, t().yaTermine, function () { ir('nombre'); }, 'opcion--si');
       });
     },
 
-    nombre: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pNombre));
-
-      var form = document.createElement('form');
-      form.className = 'campo';
-
-      var input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'campo__input';
-      input.placeholder = t().nombrePlaceholder;
-      input.setAttribute('aria-label', t().nombrePlaceholder);
-      input.maxLength = 40;
-      input.value = estado.nombre;
-
-      var enviar = document.createElement('button');
-      enviar.type = 'submit';
-      enviar.className = 'opcion opcion--si';
-      enviar.appendChild(document.createTextNode(t().nombreBoton));
-
-      var error = document.createElement('p');
-      error.className = 'campo__error';
-      error.hidden = true;
-      error.appendChild(document.createTextNode(t().nombreError));
-
-      form.addEventListener('submit', function (ev) {
-        ev.preventDefault();
-        var valor = input.value.trim();
-        if (!valor) { error.hidden = false; input.focus(); return; }
-        estado.nombre = valor;
-        estado.paso = 'listo';
-        render();
+    papas: function () {
+      decir([t().pPapas], function () {
+        var caja = bandeja('opciones--rejilla');
+        DOGO.papas.forEach(function (p) {
+          botonProducto(caja, p, function () { agregar(p, 'papas', false); ir('extra'); });
+        });
       });
-
-      form.appendChild(input);
-      form.appendChild(enviar);
-      opciones.appendChild(form);
-      opciones.appendChild(error);
-
-      window.setTimeout(function () { input.focus(); }, 60);
     },
 
-    listo: function (pregunta, opciones) {
-      pregunta.appendChild(document.createTextNode(t().pListo));
+    bebida: function () {
+      decir([t().pBebida], function () {
+        var caja = bandeja('opciones--rejilla');
+        DOGO.bebidas.forEach(function (b) {
+          botonProducto(caja, b, function () { agregar(b, 'bebida', false); ir('extra'); });
+        });
+      });
+    },
 
-      /* El link se construye hasta aquí, cuando ya existe de verdad.
-         Nunca un botón con href="#" esperando a llenarse. */
-      var url = 'https://wa.me/' + estado.sucursal.tel +
-                '?text=' + encodeURIComponent(mensaje());
+    nombre: function () {
+      decir([t().pNombre], function () {
+        var caja = bandeja('opciones--ancha');
 
-      var enlace = document.createElement('a');
-      enlace.className = 'opcion opcion--whats';
-      enlace.href = url;
-      enlace.target = '_blank';
-      enlace.rel = 'noopener';
-      enlace.appendChild(document.createTextNode(t().enviar));
+        var form = document.createElement('form');
+        form.className = 'campo';
 
-      var aviso = document.createElement('p');
-      aviso.className = 'ventanilla__nota';
-      aviso.appendChild(document.createTextNode(t().aviso));
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'campo__input';
+        input.placeholder = t().nombrePlaceholder;
+        input.setAttribute('aria-label', t().nombrePlaceholder);
+        input.maxLength = 40;
 
-      opciones.appendChild(enlace);
-      opciones.appendChild(aviso);
-      opciones.appendChild(boton(t().empezarDeNuevo, reiniciar, 'opcion--texto'));
+        var ok = document.createElement('button');
+        ok.type = 'submit';
+        ok.className = 'opcion opcion--si';
+        ok.appendChild(document.createTextNode(t().nombreBoton));
+
+        var error = document.createElement('p');
+        error.className = 'campo__error';
+        error.hidden = true;
+        error.appendChild(document.createTextNode(t().nombreError));
+
+        form.addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          var valor = input.value.trim();
+          if (!valor) { error.hidden = false; input.focus(); return; }
+          estado.nombre = valor;
+          cerrar(caja);
+          contesto(valor);
+          ir('listo');
+        });
+
+        form.appendChild(input);
+        form.appendChild(ok);
+        caja.appendChild(form);
+        caja.appendChild(error);
+        if (!('ontouchstart' in window)) { input.focus(); }
+      });
+    },
+
+    listo: function () {
+      decir([t().pListo.replace('{nombre}', estado.nombre)], function () {
+        el.charla.appendChild(comanda());
+
+        var caja = bandeja('opciones--ancha');
+
+        /* El link se arma hasta aquí, cuando ya existe de verdad.
+           Nunca un botón con href="#" esperando a llenarse. */
+        var a = document.createElement('a');
+        a.className = 'opcion opcion--whats';
+        a.href = 'https://wa.me/' + estado.sucursal.tel +
+                 '?text=' + encodeURIComponent(mensaje());
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.appendChild(document.createTextNode(t().enviar));
+        caja.appendChild(a);
+
+        var nota = document.createElement('p');
+        nota.className = 'charla__nota';
+        nota.appendChild(document.createTextNode(t().aviso));
+        caja.appendChild(nota);
+
+        botonSimple(caja, t().empezarDeNuevo, reiniciar, 'opcion--texto');
+        abajo();
+      });
     }
   };
 
-  /* ---------------- mensaje de WhatsApp (siempre en español) ---------------- */
-
-  function mensaje() {
-    var lineas = [];
-    lineas.push('*NUEVO PEDIDO — EL DOGO DEL BARRIO*');
-    lineas.push('');
-    lineas.push('Recoge en: ' + estado.sucursal.nombre);
-    lineas.push('Nombre: ' + estado.nombre);
-    lineas.push('');
-
-    estado.carrito.forEach(function (linea) {
-      lineas.push('• ' + linea.nombre + ' — ' + dinero(linea.precio));
-      if (linea.combo) {
-        lineas.push('   + Combo: ' + DOGO.combo.desc.es + ' — ' + dinero(DOGO.combo.precio));
-      }
-    });
-
-    lineas.push('');
-    lineas.push('*TOTAL: ' + dinero(total()) + '*');
-    return lineas.join('\n');
+  function ir(paso) {
+    estado.paso = paso;
+    pasos[paso]();
   }
 
-  /* ---------------- comanda ---------------- */
+  /* ================= comanda (el ticket) ================= */
 
-  function renderComanda() {
-    limpiar(el.comanda);
-    if (estado.carrito.length === 0 && !estado.sucursal) { el.comanda.hidden = true; return; }
-    el.comanda.hidden = false;
+  function comanda() {
+    var caja = document.createElement('div');
+    caja.className = 'ticket';
 
-    var titulo = document.createElement('h2');
-    titulo.className = 'comanda__titulo';
-    titulo.appendChild(document.createTextNode(t().comanda));
-    el.comanda.appendChild(titulo);
-
-    if (estado.sucursal) {
-      var suc = document.createElement('p');
-      suc.className = 'comanda__sucursal';
-      suc.appendChild(document.createTextNode(t().recogeEn + ': ' + estado.sucursal.nombre));
-      el.comanda.appendChild(suc);
-    }
-
-    if (estado.carrito.length === 0) {
-      var vacio = document.createElement('p');
-      vacio.className = 'comanda__vacio';
-      vacio.appendChild(document.createTextNode(t().vacio));
-      el.comanda.appendChild(vacio);
-      return;
-    }
+    var suc = document.createElement('p');
+    suc.className = 'ticket__sucursal';
+    suc.appendChild(document.createTextNode(t().recogeEn + ': ' + estado.sucursal.nombre));
+    caja.appendChild(suc);
 
     var lista = document.createElement('ul');
-    lista.className = 'comanda__lista';
+    lista.className = 'ticket__lista';
 
-    estado.carrito.forEach(function (linea, i) {
+    estado.carrito.forEach(function (linea) {
       var li = document.createElement('li');
-      li.className = 'comanda__linea';
+      li.className = 'ticket__linea';
 
       var texto = document.createElement('span');
-      texto.className = 'comanda__texto';
       texto.appendChild(document.createTextNode(linea.nombre));
       if (linea.combo) {
         var tag = document.createElement('span');
-        tag.className = 'comanda__combo';
+        tag.className = 'ticket__combo';
         tag.appendChild(document.createTextNode(t().comboEtiqueta));
         texto.appendChild(tag);
       }
 
       var precio = document.createElement('span');
-      precio.className = 'comanda__precio';
+      precio.className = 'ticket__precio';
       precio.appendChild(document.createTextNode(
         dinero(linea.precio + (linea.combo ? DOGO.combo.precio : 0))
       ));
 
-      var borrar = document.createElement('button');
-      borrar.type = 'button';
-      borrar.className = 'comanda__quitar';
-      borrar.setAttribute('aria-label', t().quitar + ': ' + linea.nombre);
-      borrar.appendChild(document.createTextNode('×'));
-      borrar.addEventListener('click', function () { quitar(i); });
-
       li.appendChild(texto);
       li.appendChild(precio);
-      li.appendChild(borrar);
       lista.appendChild(li);
     });
 
-    el.comanda.appendChild(lista);
+    caja.appendChild(lista);
 
     var pie = document.createElement('p');
-    pie.className = 'comanda__total';
-
-    var etiqueta = document.createElement('span');
-    etiqueta.appendChild(document.createTextNode(t().total));
+    pie.className = 'ticket__total';
+    var etq = document.createElement('span');
+    etq.appendChild(document.createTextNode(t().total));
     var cifra = document.createElement('strong');
     cifra.appendChild(document.createTextNode(dinero(total())));
-
-    pie.appendChild(etiqueta);
+    pie.appendChild(etq);
     pie.appendChild(cifra);
-    el.comanda.appendChild(pie);
+    caja.appendChild(pie);
+
+    return caja;
   }
 
-  /* ---------------- render ---------------- */
+  /* ================= mensaje de WhatsApp (siempre en español) ================= */
 
-  function render() {
-    limpiar(el.pregunta);
-    limpiar(el.opciones);
-
-    var nota = el.ventanilla.querySelector('.ventanilla__nota');
-    while (nota) { nota.parentNode.removeChild(nota); nota = el.ventanilla.querySelector('.ventanilla__nota'); }
-
-    el.opciones.className = 'ventanilla__opciones';
-    pasos[estado.paso](el.pregunta, el.opciones);
-    renderComanda();
+  function mensaje() {
+    var l = [];
+    l.push('*NUEVO PEDIDO — EL DOGO DEL BARRIO*');
+    l.push('');
+    l.push('Recoge en: ' + estado.sucursal.nombre);
+    l.push('Nombre: ' + estado.nombre);
+    l.push('');
+    estado.carrito.forEach(function (linea) {
+      l.push('• ' + linea.nombre + ' — ' + dinero(linea.precio));
+      if (linea.combo) {
+        l.push('   + Combo: ' + DOGO.combo.desc.es + ' — ' + dinero(DOGO.combo.precio));
+      }
+    });
+    l.push('');
+    l.push('*TOTAL: ' + dinero(total()) + '*');
+    return l.join('\n');
   }
+
+  /* ================= arranque y reinicio ================= */
 
   function reiniciar() {
     estado.sucursal = null;
     estado.carrito = [];
     estado.nombre = '';
     estado.pendiente = null;
-    estado.paso = 'sucursal';
-    render();
+    saltar = null;
+    limpiar(el.charla);
+    pintarBarra();
+    ir('saludo');
   }
-
-  /* ---------------- idioma ---------------- */
 
   function cambiarIdioma(nuevo) {
     estado.idioma = nuevo;
     document.documentElement.lang = nuevo;
     document.dispatchEvent(new CustomEvent('dogo:idioma', { detail: nuevo }));
-    render();
+    reiniciar();
   }
 
-  /* ---------------- arranque ---------------- */
-
   function iniciar() {
-    el.ventanilla = document.getElementById('ventanilla');
-    el.pregunta = document.getElementById('bot-pregunta');
-    el.opciones = document.getElementById('bot-opciones');
-    el.comanda = document.getElementById('bot-comanda');
-    if (!el.ventanilla) { return; }
+    el.pantalla = document.getElementById('pantalla');
+    el.charla = document.getElementById('charla');
+    el.cuenta = document.getElementById('cuenta');
+    if (!el.charla) { return; }
 
-    var navegador = (navigator.language || 'es').slice(0, 2).toLowerCase();
-    estado.idioma = navegador === 'en' ? 'en' : 'es';
-    document.documentElement.lang = estado.idioma;
+    /* El negocio está en Edo. de México: el español es el default.
+       El botón EN queda para quien lo necesite. */
+    estado.idioma = 'es';
+    document.documentElement.lang = 'es';
 
     DOGO.idioma = function () { return estado.idioma; };
     DOGO.cambiarIdioma = cambiarIdioma;
 
-    render();
+    /* tocar la pantalla adelanta lo que el asistente está escribiendo */
+    el.charla.addEventListener('click', function (ev) {
+      if (saltar && ev.target.closest && !ev.target.closest('.opciones')) { saltar(); }
+    });
+
+    pintarBarra();
+
+    /* arranca cuando la pantalla entra en cuadro, no antes: así el
+       saludo no se escribe mientras nadie lo está viendo */
+    if ('IntersectionObserver' in window) {
+      var ojo = new IntersectionObserver(function (entradas) {
+        if (entradas[0].isIntersecting) {
+          ojo.disconnect();
+          ir('saludo');
+        }
+      }, { threshold: 0.25 });
+      ojo.observe(el.pantalla);
+    } else {
+      ir('saludo');
+    }
   }
 
   if (document.readyState === 'loading') {

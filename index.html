@@ -37,19 +37,35 @@
 
     <div class="perrito" id="perrito-caja">
       <div class="perrito__reaccion" id="perrito-reaccion">
-        <img class="perrito__img" id="perrito-img" src="img/perrito.svg"
-             alt="El Dogo del Barrio, con gorra, lentes oscuros y chaleco de mezclilla, sosteniendo una cátsup y un hot dog">
+        <video class="perrito__video" id="perrito-img"
+               src="video/dogo-loop.mp4" poster="video/poster.jpg"
+               autoplay loop muted playsinline
+               aria-label="El Dogo del Barrio te ofrece un hot dog"></video>
       </div>
     </div>
 
-    <div class="ventanilla" id="ventanilla">
-      <h2 class="ventanilla__pregunta" id="bot-pregunta"></h2>
-      <div class="ventanilla__opciones" id="bot-opciones"></div>
+  </section>
 
-      <a class="ventanilla__abajo" href="#menu" data-txt="verMenu">Ver el menú</a>
+  <!-- ===== LA TERMINAL: el asistente toma el pedido ===== -->
+  <section class="terminal" id="terminal">
+
+    <div class="ipad">
+      <span class="ipad__camara" aria-hidden="true"></span>
+
+      <div class="ipad__pantalla" id="pantalla">
+
+        <div class="barra-pedido">
+          <img class="barra-pedido__marca" src="img/logo.png" width="760" height="564" alt="">
+          <span class="barra-pedido__etq" data-txt="terminal">Pedido</span>
+          <span class="barra-pedido__cuenta" id="cuenta">—</span>
+        </div>
+
+        <div class="charla" id="charla" role="log" aria-live="polite"></div>
+
+      </div>
     </div>
 
-    <aside class="comanda" id="bot-comanda" hidden></aside>
+    <a class="terminal__abajo" href="#menu" data-txt="verMenu">Ver el menú</a>
 
   </section>
 
