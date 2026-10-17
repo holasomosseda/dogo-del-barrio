@@ -36,7 +36,14 @@
   --rojo:        #E3261F;
   --rojo-hondo:  #A8120D;
   --tinta:       #141414;
-  --concreto:    #EDEAE4;
+
+  /* Fondo de la página. NO es un color de marca elegido a ojo: es el
+     color exacto con el que el navegador pinta el fondo del video del
+     perrito, medido en pantalla. Si algún día se cambia el video, hay
+     que volver a medirlo o reaparece el recuadro. */
+  --fondo:       #EFECE6;
+
+  --concreto:    #EDEAE4;   /* superficies de interfaz: botones, burbujas */
   --hueso:       #F7F5F0;
   --mostaza:     #F2B705;
   --humo:        #6F6B66;
@@ -55,8 +62,10 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background-color: var(--concreto);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)' opacity='.055'/%3E%3C/svg%3E");
+  /* Fondo plano, sin grano. El grano se veía bien pero oscurecía la
+     página ~6 puntos, y el video trae su fondo liso: ahí aparecía el
+     recuadro. Plano en los dos lados = nada que empatar. */
+  background-color: var(--fondo);
   color: var(--tinta);
   font-family: 'Barlow', system-ui, -apple-system, sans-serif;
   font-size: 17px;
@@ -150,16 +159,6 @@ img, video { max-width: 100%; display: block; }
 }
 
 .perrito__reaccion { position: relative; transform-origin: 50% 100%; }
-
-/* El video trae su fondo horneado y liso; la página tiene grano.
-   Sin esto se alcanza a ver el rectángulo del video. */
-.perrito__reaccion::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)' opacity='.055'/%3E%3C/svg%3E");
-}
 
 .perrito__video {
   width: min(62vw, 340px);

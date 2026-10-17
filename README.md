@@ -62,15 +62,19 @@ fonts/              Anton y Barlow, alojadas aquí mismo
 
 ## Si algún día se cambia el video
 
-El fondo del video **tiene que coincidir con `#EDEAE4`**, el color de la
-página, o se va a ver el rectángulo. Kling regresó el suyo en `#EBE7DF` y
-hubo que corregirlo:
+El fondo de la página (`--fondo`, hoy `#EFECE6`) **no es un color de marca
+elegido a ojo**: es el color exacto con el que el navegador pinta el fondo
+del video del perrito, medido en pantalla. Están iguales a propósito, para
+que el video no se vea como un recuadro pegado encima.
 
-```
-ffmpeg -i entrada.mp4 -vf "lutrgb=r='clip(val+2,0,255)':g='clip(val+3,0,255)':b='clip(val+5,0,255)'" salida.mp4
-```
+Si se cambia el video, hay que volver a medirlo y ajustar `--fondo`. Y no
+sirve medir el archivo con ffmpeg: el navegador convierte el color del
+video y lo corre un par de puntos. Hay que medirlo **en el navegador**,
+sobre una captura de la página ya montada.
 
-Mide el fondo real antes de asumir que quedó bien.
+Por lo mismo la página no lleva textura de grano. Se veía bien, pero
+oscurecía el fondo unos 6 puntos y el video no la lleva — ahí aparecía el
+recuadro. Plano en los dos lados es lo único que empata sin pelearse.
 
 ---
 
