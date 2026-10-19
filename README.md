@@ -67,10 +67,19 @@ elegido a ojo**: es el color exacto con el que el navegador pinta el fondo
 del video del perrito, medido en pantalla. Están iguales a propósito, para
 que el video no se vea como un recuadro pegado encima.
 
-Si se cambia el video, hay que volver a medirlo y ajustar `--fondo`. Y no
-sirve medir el archivo con ffmpeg: el navegador convierte el color del
-video y lo corre un par de puntos. Hay que medirlo **en el navegador**,
-sobre una captura de la página ya montada.
+Si se cambia el video hay que hacer **dos** cosas, no una:
+
+1. **Aplanar el fondo del video.** Tal como sale de Kling, el fondo no es
+   un color: es un rango de unos 5 puntos. Contra eso ningún color plano
+   de CSS empata, y por eso se seguía viendo el recuadro. Hay que
+   rellenar el fondo conectado al borde con un color exacto, cuadro por
+   cuadro, antes de codificar.
+2. **Volver a medir en el navegador** y ajustar `--fondo`. No sirve medir
+   el archivo con ffmpeg: el navegador convierte el color del video y lo
+   corre un punto o dos.
+
+Hoy el fondo del video es 98% un solo color y el escalón entre página y
+video quedó medido en 0.
 
 Por lo mismo la página no lleva textura de grano. Se veía bien, pero
 oscurecía el fondo unos 6 puntos y el video no la lleva — ahí aparecía el

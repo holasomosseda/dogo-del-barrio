@@ -41,7 +41,7 @@
      color exacto con el que el navegador pinta el fondo del video del
      perrito, medido en pantalla. Si algún día se cambia el video, hay
      que volver a medirlo o reaparece el recuadro. */
-  --fondo:       #EFECE6;
+  --fondo:       #EFECE5;
 
   --concreto:    #EDEAE4;   /* superficies de interfaz: botones, burbujas */
   --hueso:       #F7F5F0;
