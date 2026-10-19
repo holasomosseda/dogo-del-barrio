@@ -160,10 +160,26 @@ img, video { max-width: 100%; display: block; }
 
 .perrito__reaccion { position: relative; transform-origin: 50% 100%; }
 
+/* franja roja rasgada detrás del marco, como los trazos del menú impreso */
+.perrito__reaccion::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -7%;
+  right: -7%;
+  top: 5%;
+  bottom: -3%;
+  background: var(--rojo);
+  clip-path: polygon(2% 3%, 98% 0%, 100% 96%, 0% 100%);
+}
+
 .perrito__video {
   width: min(62vw, 340px);
   height: auto;
   margin-inline: auto;
+  border: 3px solid var(--tinta);
+  border-radius: 3px;
+  box-shadow: var(--sombra);
   transform-origin: 50% 100%;
   opacity: 0;
   transform: translateY(30px);

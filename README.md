@@ -67,19 +67,26 @@ elegido a ojo**: es el color exacto con el que el navegador pinta el fondo
 del video del perrito, medido en pantalla. Están iguales a propósito, para
 que el video no se vea como un recuadro pegado encima.
 
-Si se cambia el video hay que hacer **dos** cosas, no una:
+El video del perrito **va enmarcado a propósito** (borde negro + sombra
+dura, igual que los botones y la tableta), con la franja roja detrás.
 
-1. **Aplanar el fondo del video.** Tal como sale de Kling, el fondo no es
-   un color: es un rango de unos 5 puntos. Contra eso ningún color plano
-   de CSS empata, y por eso se seguía viendo el recuadro. Hay que
-   rellenar el fondo conectado al borde con un color exacto, cuadro por
-   cuadro, antes de codificar.
-2. **Volver a medir en el navegador** y ajustar `--fondo`. No sirve medir
-   el archivo con ffmpeg: el navegador convierte el color del video y lo
-   corre un punto o dos.
+No es decoración: es la solución a un problema que no tiene arreglo por
+color. El navegador convierte el color del video al perfil de cada
+monitor, y las pantallas de gama amplia lo resuelven distinto a las
+normales. El mismo archivo con el mismo hex se ve empatado en un celular
+y despegado en un monitor externo. Se intentó igualar el color tres veces
+y por eso no cerraba.
 
-Hoy el fondo del video es 98% un solo color y el escalón entre página y
-video quedó medido en 0.
+Lo que sí se hizo y conviene conservar:
+
+- El fondo del video está **aplanado** (98% un solo color), rellenando
+  cuadro por cuadro el fondo conectado al borde. Sin eso el fondo era un
+  rango de ~5 puntos.
+- El MP4 lleva **etiquetas de color explícitas** (`bt709`). Sin ellas el
+  navegador adivina, y adivina distinto en cada pantalla.
+
+Se descartó el video con transparencia (WebM/VP9 con alfa): no encodea
+bien y Safari no lo soporta.
 
 Por lo mismo la página no lleva textura de grano. Se veía bien, pero
 oscurecía el fondo unos 6 puntos y el video no la lleva — ahí aparecía el

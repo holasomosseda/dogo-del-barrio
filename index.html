@@ -37,9 +37,13 @@
 
     <div class="perrito" id="perrito-caja">
       <div class="perrito__reaccion" id="perrito-reaccion">
-        <video class="perrito__video" id="perrito-img"
-               src="video/dogo-loop.mp4" poster="video/poster.jpg"
-               autoplay loop muted playsinline
+        <!-- El video va enmarcado a propósito. Su fondo nunca va a empatar
+             con el de la página en TODOS los monitores: el navegador
+             convierte el color del video al perfil de cada pantalla, y en
+             monitores de gama amplia se separa. Con marco, el borde es una
+             decisión de diseño y deja de ser un defecto que perseguir. -->
+        <video class="perrito__video" id="perrito-img" poster="video/poster.jpg"
+               src="video/dogo-loop.mp4" autoplay loop muted playsinline
                aria-label="El Dogo del Barrio te ofrece un hot dog"></video>
       </div>
     </div>
